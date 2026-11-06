@@ -6,6 +6,7 @@ import model.Usuario;
 import model.ListaReproduccion;
 import model.Cancion;
 import model.Administrador;
+import servicio.ReproductorConsola;
 import java.util.Scanner;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -210,7 +211,13 @@ public class Menu {
         System.out.println("5. Calificar canción");
         System.out.println("6. Crear lista de reproducción");
         System.out.println("7. Agregar canción a una lista");
+        System.out.println("8. Reproducir muestra gratuita");
+        System.out.println("9. Agregar canción a la cola");
+        System.out.println("10. Consultar cola de reproducción");
+        System.out.println("11. Reproducir siguiente canción");
+        System.out.println("12. Detener reproducción");
         System.out.println("0. Cerrar sesión");
+
 
     }
 
@@ -221,6 +228,8 @@ public class Menu {
             System.out.println("Debe iniciar sesión como usuario.");
             return;
         }
+
+        ReproductorConsola reproductor = new ReproductorConsola();
 
         String opcion;
 
@@ -401,6 +410,97 @@ public class Menu {
                     } catch (IllegalArgumentException | IllegalStateException e) {
                         System.out.println("Error: " + e.getMessage());
                     }
+
+                    break;
+
+
+                case "8":
+                    System.out.println("\n===== MUESTRA GRATUITA =====");
+                    System.out.print("Ingrese el ID de la canción: ");
+
+                    try {
+                        int idCancion = Integer.parseInt(
+                                scanner.nextLine().trim()
+                        );
+
+                        Cancion cancion = aplicacion.buscarCancionPorId(idCancion);
+
+                        System.out.println(
+                                reproductor.reproducirMuestra(cancion)
+                        );
+
+                    } catch (NumberFormatException e) {
+                        System.out.println(
+                                "Error: El ID debe ser un número entero."
+                        );
+
+                    } catch (IllegalArgumentException | IllegalStateException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+
+                    break;
+
+
+                case "9":
+                    System.out.println("\n===== AGREGAR CANCION A LA COLA =====");
+                    System.out.print("Ingrese el ID de la cancion: ");
+
+                    try {
+                        int idCancion = Integer.parseInt(
+                                scanner.nextLine().trim()
+                        );
+
+                        Cancion cancion = aplicacion.buscarCancionPorId(idCancion);
+
+                        reproductor.agregarACola(usuario, cancion);
+
+                        System.out.println("Cancion agregada correctamente a la cola.");
+                        System.out.println("Cancion: " + cancion.getNombre());
+                        System.out.println("Canciones pendientes: "
+                                + reproductor.cantidadPendientes());
+
+                    } catch (NumberFormatException e) {
+                        System.out.println(
+                                "Error: El ID debe ser un numero entero."
+                        );
+
+                    } catch (IllegalArgumentException | IllegalStateException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+
+                    break;
+
+
+                case "10":
+                    System.out.println("\n===== CONSULTAR COLA DE REPRODUCCIÓN =====");
+
+                    System.out.println(reproductor.mostrarCola());
+
+                    System.out.println("Canciones pendientes: "
+                            + reproductor.cantidadPendientes());
+
+                    break;
+
+
+                case "11":
+                    System.out.println("\n===== REPRODUCIR SIGUIENTE CANCIÓN =====");
+
+                    System.out.println(
+                            reproductor.reproducirSiguiente()
+                    );
+
+                    System.out.println("Canciones pendientes: "
+                            + reproductor.cantidadPendientes());
+
+                    break;
+
+
+                case "12":
+                    System.out.println("\n===== DETENER REPRODUCCIÓN =====");
+
+                    System.out.println(
+                            reproductor.detener()
+                    );
 
                     break;
 
