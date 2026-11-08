@@ -185,5 +185,42 @@ public class Pruebas {
         for (Reproducible item : cola) {
             System.out.println(item.reproducir());
         }
+
+        // PRUEBA 7: Búsquedas
+        System.out.println("\n===== PRUEBA DE BÚSQUEDAS =====");
+        System.out.println("Por nombre 'bohem': " + aplicacion.buscarCancionesPorNombre("bohem").size());
+        System.out.println("Por género 'pop': " + aplicacion.buscarCancionesPorGenero("pop").size());
+        System.out.println("Por artista 'queen': " + aplicacion.buscarCancionesPorArtista("queen").size());
+        System.out.println("Listas de usuario1 con 'fav': " + usuario1.buscarListasPorNombre("fav").size());
+        try {
+            aplicacion.buscarCancionesPorNombre("  ");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error esperado: " + e.getMessage());
+        }
+
+        // PRUEBA 8: Top 3
+        System.out.println("\n===== PRUEBA DE TOP 3 =====");
+        System.out.println("Mejor calificadas: ");
+        for (Cancion c : aplicacion.top3MejorCalificadas()) {
+            System.out.println(" - " + c.getNombre());
+        }
+        System.out.println("Más compradas: ");
+        for (Cancion c : aplicacion.top3MasCompradas()) {
+            System.out.println(" - " + c.getNombre());
+        }
+        System.out.println("Más incluidas en listas: ");
+        for (Cancion c : aplicacion.top3MasIncluidasEnListas()) {
+            System.out.println(" - " + c.getNombre());
+        }
+
+        // PRUEBA 9: Quitar canción de una lista
+        System.out.println("\n===== PRUEBA DE QUITAR CANCIÓN =====");
+        usuario1.quitarCancionDeLista(lista1, cancion2);
+        System.out.println(lista1);
+        try {
+            usuario2.quitarCancionDeLista(lista1, cancion1); // lista de otro usuario
+        } catch (IllegalStateException e) {
+            System.out.println("Error esperado: " + e.getMessage());
+        }
     }
 }

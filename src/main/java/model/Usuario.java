@@ -221,4 +221,35 @@ public class Usuario extends Cuenta {
         }
         lista.agregarCancion(cancion); // agregar canción
     }
+
+    // Buscar listas de reproducción por Nombre
+    public List<ListaReproduccion> buscarListasPorNombre(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar el texto a buscar");
+        }
+        List<ListaReproduccion> resultados = new ArrayList<>();
+        for (ListaReproduccion lista : listasReproduccion) {
+            if (lista.getNombre().toLowerCase().contains(texto.toLowerCase())) {
+                resultados.add(lista);
+            }
+        }
+        return resultados;
+    }
+
+    // Quitar canción de una lista
+    public void quitarCancionDeLista(ListaReproduccion lista, Cancion cancion){
+        if (cancion == null){
+            throw new IllegalArgumentException("Debe indicar la canción");
+        }
+        boolean esMia = false; // ¿la lista es de este usuario?
+        for (ListaReproduccion propia : listasReproduccion){
+            if (propia == lista){
+                esMia = true;
+            }
+        }
+        if (!esMia){
+            throw new IllegalStateException("La lista no pertenece a este usuario");
+        }
+        lista.quitarCancion(cancion);
+    }
 }

@@ -11,6 +11,7 @@ import java.util.Scanner;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 public class Menu {
 
@@ -216,6 +217,10 @@ public class Menu {
         System.out.println("10. Consultar cola de reproducción");
         System.out.println("11. Reproducir siguiente canción");
         System.out.println("12. Detener reproducción");
+        System.out.println("13. Buscar canciones");
+        System.out.println("14. Buscar mis listas de reproducción");
+        System.out.println("15. Ver Top 3");
+        System.out.println("16. Quitar canción de una lista");
         System.out.println("0. Cerrar sesión");
 
 
@@ -504,6 +509,80 @@ public class Menu {
 
                     break;
 
+                case "13":
+                    buscarCanciones();
+                    break;
+
+                case "14":
+                    System.out.println("\n===== BUSCAR MIS LISTAS =====");
+                    System.out.print("Nombre (o parte del nombre) de la lista: ");
+
+                    try {
+                        List<ListaReproduccion> encontradas =
+                                usuario.buscarListasPorNombre(scanner.nextLine().trim());
+
+                        if (encontradas.isEmpty()) {
+                            System.out.println("No se encontraron listas.");
+                        } else {
+                            for (ListaReproduccion lista : encontradas) {
+                                System.out.println(lista);
+                                System.out.println();
+                            }
+                        }
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                    break;
+
+                case "15":
+                    mostrarTop3();
+                    break;
+
+                case "16":
+                    System.out.println("\n===== QUITAR CANCIÓN DE UNA LISTA =====");
+
+                    if (usuario.getListasReproduccion().isEmpty()) {
+                        System.out.println("No tienes listas de reproducción.");
+                        break;
+                    }
+
+                    for (int i = 0; i < usuario.getListasReproduccion().size(); i++) {
+                        System.out.println((i + 1) + ". "
+                                + usuario.getListasReproduccion().get(i).getNombre());
+                    }
+
+                    try {
+                        System.out.print("Número de la lista: ");
+                        int numeroLista = Integer.parseInt(scanner.nextLine().trim());
+
+                        if (numeroLista < 1 ||
+                                numeroLista > usuario.getListasReproduccion().size()) {
+                            throw new IllegalArgumentException("La lista seleccionada no existe.");
+                        }
+
+                        ListaReproduccion listaSeleccionada =
+                                usuario.getListasReproduccion().get(numeroLista - 1);
+
+                        System.out.println("Canciones de la lista:");
+                        for (Cancion c : listaSeleccionada.getCanciones()) {
+                            System.out.println(c.getId() + ". " + c.getNombre());
+                        }
+
+                        System.out.print("Ingrese el ID de la canción a quitar: ");
+                        int idCancion = Integer.parseInt(scanner.nextLine().trim());
+
+                        Cancion cancion = aplicacion.buscarCancionPorId(idCancion);
+                        usuario.quitarCancionDeLista(listaSeleccionada, cancion);
+
+                        System.out.println("La canción fue quitada de la lista.");
+
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error: Debe ingresar un número válido.");
+                    } catch (IllegalArgumentException | IllegalStateException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                    break;
+
 
                 case "0":
                     cuentaActual = null;
@@ -524,6 +603,8 @@ public class Menu {
         System.out.println("\n===== MENÚ DE ADMINISTRADOR =====");
         System.out.println("1. Consultar usuarios registrados");
         System.out.println("2. Consultar catálogo de canciones");
+        System.out.println("3. Buscar canciones");
+        System.out.println("4. Ver Top 3");
         System.out.println("0. Cerrar sesión");
 
     }
@@ -554,6 +635,14 @@ public class Menu {
                     aplicacion.mostrarCanciones();
                     break;
 
+                case "3":
+                    buscarCanciones();
+                    break;
+
+                case "4":
+                    mostrarTop3();
+                    break;
+
                 case "0":
                     cuentaActual = null;
                     System.out.println("Sesión cerrada.");
@@ -565,6 +654,82 @@ public class Menu {
             }
 
         } while (!opcion.equals("0"));
+    }
+
+    // MÉTODO PARA BUSCAR CANCIONES POR NOMBRE, GÉNERO O ARTISTA
+    private void buscarCanciones() {
+
+        System.out.println("\n===== BUSCAR CANCIONES =====");
+        System.out.println("1. Por nombre");
+        System.out.println("2. Por género");
+        System.out.println("3. Por artista");
+
+        String tipo = leerOpcion();
+
+        System.out.print("Texto a buscar: ");
+        String texto = scanner.nextLine().trim();
+
+        try {
+            List<Cancion> resultados;
+
+            switch (tipo) {
+                case "1":
+                    resultados = aplicacion.buscarCancionesPorNombre(texto);
+                    break;
+                case "2":
+                    resultados = aplicacion.buscarCancionesPorGenero(texto);
+                    break;
+                case "3":
+                    resultados = aplicacion.buscarCancionesPorArtista(texto);
+                    break;
+                default:
+                    System.out.println("Opción inválida.");
+                    return;
+            }
+
+            if (resultados.isEmpty()) {
+                System.out.println("No se encontraron canciones.");
+            } else {
+                for (Cancion cancion : resultados) {
+                    System.out.println(cancion);
+                    System.out.println();
+                }
+            }
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // MÉTODO PARA MOSTRAR LOS TRES TOP 3 (se recalculan cada vez que se consultan)
+    private void mostrarTop3() {
+
+        System.out.println("\n===== TOP 3 =====");
+
+        System.out.println("\nCanciones mejor calificadas:");
+        imprimirTop(aplicacion.top3MejorCalificadas());
+
+        System.out.println("\nCanciones más compradas:");
+        imprimirTop(aplicacion.top3MasCompradas());
+
+        System.out.println("\nCanciones más incluidas en listas de reproducción:");
+        imprimirTop(aplicacion.top3MasIncluidasEnListas());
+    }
+
+    // MÉTODO AUXILIAR PARA IMPRIMIR UN TOP
+    private void imprimirTop(List<Cancion> top) {
+
+        if (top.isEmpty()) {
+            System.out.println("  (no hay canciones)");
+            return;
+        }
+
+        for (int i = 0; i < top.size(); i++) {
+            Cancion cancion = top.get(i);
+            System.out.println("  " + (i + 1) + ". " + cancion.getNombre()
+                    + " - " + cancion.getArtista()
+                    + " (Calificación: " + cancion.getCalificacion() + ")");
+        }
     }
 
     // MÉTODO PARA MOSTRAR EL MENÚ PRINCIPAL

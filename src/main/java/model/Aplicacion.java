@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Aplicacion {
@@ -89,6 +90,48 @@ public class Aplicacion {
         );
     }
 
+    // MÉTODO PARA BUSCAR CANCIONES POR NOMBRE
+    public List<Cancion> buscarCancionesPorNombre(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar el texto a buscar");
+        }
+        List<Cancion> resultados = new ArrayList<>();
+        for (Cancion cancion : canciones) {
+            if (cancion.getNombre().toLowerCase().contains(texto.toLowerCase())) {
+                resultados.add(cancion);
+            }
+        }
+        return resultados;
+    }
+
+    // MÉTODO PARA BUSCAR CANCIONES POR GÉNERO
+    public List<Cancion> buscarCancionesPorGenero(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar el texto a buscar");
+        }
+        List<Cancion> resultados = new ArrayList<>();
+        for (Cancion cancion : canciones) {
+            if (cancion.getGenero() != null && cancion.getGenero().toLowerCase().contains(texto.toLowerCase())) {
+                resultados.add(cancion);
+            }
+        }
+        return resultados;
+    }
+
+    // MÉTODO PARA BUSCAR CANCIONES POR ARTISTA
+    public List<Cancion> buscarCancionesPorArtista(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar el texto a buscar");
+        }
+        List<Cancion> resultados = new ArrayList<>();
+        for (Cancion cancion : canciones) {
+            if (cancion.getArtista().toLowerCase().contains(texto.toLowerCase())) {
+                resultados.add(cancion);
+            }
+        }
+        return resultados;
+    }
+
     // MÉTODOS PARA REGISTRAR OBJETOS
     public void registrarUsuario(Usuario usuario) {
         usuarios.add(usuario);
@@ -132,6 +175,86 @@ public class Aplicacion {
             System.out.println();
         }
     }
+
+    // MÉTODO TOP 3 DE CANCIONES MEJOR CALIFICADAS
+    public List<Cancion> top3MejorCalificadas() {
+        List<Cancion> pendientes = new ArrayList<>(canciones); // copia, para no tocar el catálogo
+        List<Cancion> top = new ArrayList<>();
+
+        while (top.size() < 3 && !pendientes.isEmpty()) {
+            Cancion mejor = pendientes.get(0);
+            for (Cancion cancion : pendientes) {
+                if (cancion.getCalificacion() > mejor.getCalificacion()) {
+                    mejor = cancion;
+                }
+            }
+            top.add(mejor);
+            pendientes.remove(mejor); // la aparto para que no se repita
+        }
+        return top;
+    }
+
+    private int contarCompras(Cancion cancion) {
+        int total = 0;
+        for (Usuario usuario : usuarios) {
+            if (usuario.tieneCancion(cancion)) {
+                total++;
+            }
+        }
+        return total;
+    }
+
+    private int contarEnListas(Cancion cancion) {
+        int total = 0;
+        for (Usuario usuario : usuarios) { // nivel 1: cada usuario
+            for (ListaReproduccion lista : usuario.getListasReproduccion()) { // nivel 2: cada lista suya
+                for (Cancion existente : lista.getCanciones()) { // nivel 3: cada canción de esa lista
+                    if (existente.equals(cancion)) { // ¿es la que busco?
+                        total++;
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
+    // MÉTODO TOP 3 DE CANCIONES MÁS COMPRADAS
+    public List<Cancion> top3MasCompradas() {
+        List<Cancion> pendientes = new ArrayList<>(canciones);
+        List<Cancion> top = new ArrayList<>();
+
+        while (top.size() < 3 && !pendientes.isEmpty()) {
+            Cancion mejor = pendientes.get(0);
+            for (Cancion cancion : pendientes) {
+                if (contarCompras(cancion) > contarCompras(mejor)) {
+                    mejor = cancion;
+                }
+            }
+            top.add(mejor);
+            pendientes.remove(mejor);
+        }
+        return top;
+    }
+
+    // MÉTODO TOP 3 DE CANCIONES MÁS INCLUIDAS EN LISTAS
+    public List<Cancion> top3MasIncluidasEnListas() {
+        List<Cancion> pendientes = new ArrayList<>(canciones);
+        List<Cancion> top = new ArrayList<>();
+
+        while (top.size() < 3 && !pendientes.isEmpty()) {
+            Cancion mejor = pendientes.get(0);
+            for (Cancion cancion : pendientes) {
+                if (contarEnListas(cancion) > contarEnListas(mejor)) {
+                    mejor = cancion;
+                }
+            }
+            top.add(mejor);
+            pendientes.remove(mejor);
+        }
+        return top;
+    }
+
+
 
     // toString()
     public String toString() {
